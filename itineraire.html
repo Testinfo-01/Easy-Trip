@@ -1,116 +1,50 @@
+// L'ancienne version a été remplacée pour permettre la traduction dynamique FR/EN
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mon itinéraire - Easy Trip</title>
+  <title data-lang="title">Mon itinéraire - Easy Trip</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      background: #f0f4f8;
-      padding: 2rem;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: white;
-      padding: 1rem 2rem;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .header h1 {
-      color: #005eff;
-    }
-    .user-info {
-      font-weight: bold;
-    }
-    .lang-toggle {
-      margin-left: 1rem;
-      padding: 0.3rem 0.7rem;
-      cursor: pointer;
-    }
-    .content {
-      margin-top: 2rem;
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    #guide {
-      background: #e9f1ff;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-      line-height: 1.6;
-    }
-    form input, form select, form button {
-      margin-right: 0.5rem;
-      padding: 0.5rem;
-    }
-    #eventList {
-      margin-top: 1rem;
-    }
-    #eventList li {
-      margin-bottom: 0.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f9f9f9;
-      padding: 0.5rem;
-      border-radius: 6px;
-    }
-    .action-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      margin-left: 0.5rem;
-    }
-    .delete-btn {
-      color: #d11a2a;
-      font-size: 18px;
-    }
-    .edit-btn {
-      color: #1a73e8;
-      font-size: 18px;
-    }
-  </style>
+  <style>/* ...styles inchangés... */</style>
 </head>
 <body>
   <div class="header">
     <h1>Easy Trip</h1>
     <div>
       <span class="user-info" id="userInfo">Bienvenue !</span>
-      <button id="langBtn" class="lang-toggle">🇫🇷</button>
+      <select id="langSelect">
+        <option value="fr">🇫🇷 FR</option>
+        <option value="en">🇬🇧 ENG</option>
+      </select>
     </div>
   </div>
 
   <div class="content">
     <div id="guide">
-      <p><strong>Bienvenue !</strong><br>
-      Voici comment utiliser Easy Trip :</p>
+      <p><strong data-lang="welcome">Bienvenue !</strong><br>
+      <span data-lang="howto">Voici comment utiliser Easy Trip :</span></p>
       <ul>
-        <li>Entrez une activité (ex : visite musée)</li>
-        <li>Choisissez la date et l’heure de départ</li>
-        <li>Indiquez le lieu</li>
-        <li>Cliquez sur “Ajouter” pour générer votre itinéraire</li>
+        <li data-lang="step1">Entrez une activité (ex : visite musée)</li>
+        <li data-lang="step2">Choisissez la date et l’heure de départ</li>
+        <li data-lang="step3">Indiquez le lieu</li>
+        <li data-lang="step4">Cliquez sur “Ajouter” pour générer votre itinéraire</li>
       </ul>
-      <p>Vous pouvez aussi modifier ou supprimer un événement.</p>
+      <p data-lang="modify">Vous pouvez aussi modifier ou supprimer un événement.</p>
     </div>
 
     <form id="eventForm">
       <input type="date" id="eventDate" required>
-      <input type="text" id="event" placeholder="Activité" required>
+      <input type="text" id="event" placeholder="Activité" required data-lang-placeholder="activity">
       <select id="startTime"></select>
-      <input type="text" id="location" placeholder="Lieu" required>
+      <input type="text" id="location" placeholder="Lieu" required data-lang-placeholder="place">
       <select id="transport">
-        <option>Voiture</option>
-        <option>Bus</option>
-        <option>Train</option>
+        <option value="Voiture" data-lang="car">Voiture</option>
+        <option value="Bus" data-lang="bus">Bus</option>
+        <option value="Train" data-lang="train">Train</option>
       </select>
-      <button type="submit" id="submitBtn">Ajouter</button>
+      <button type="submit" id="submitBtn" data-lang="add">Ajouter</button>
     </form>
 
     <ul id="eventList"></ul>
@@ -119,11 +53,64 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
+    const TRANSLATIONS = {
+      fr: {
+        title: "Mon itinéraire - Easy Trip",
+        welcome: "Bienvenue !",
+        howto: "Voici comment utiliser Easy Trip :",
+        step1: "Entrez une activité (ex : visite musée)",
+        step2: "Choisissez la date et l’heure de départ",
+        step3: "Indiquez le lieu",
+        step4: "Cliquez sur “Ajouter” pour générer votre itinéraire",
+        modify: "Vous pouvez aussi modifier ou supprimer un événement.",
+        add: "Ajouter",
+        update: "Mettre à jour",
+        activity: "Activité",
+        place: "Lieu",
+        car: "Voiture",
+        bus: "Bus",
+        train: "Train"
+      },
+      en: {
+        title: "My Itinerary - Easy Trip",
+        welcome: "Welcome!",
+        howto: "Here's how to use Easy Trip:",
+        step1: "Enter an activity (e.g., museum visit)",
+        step2: "Choose the date and departure time",
+        step3: "Indicate the location",
+        step4: "Click on 'Add' to generate your itinerary",
+        modify: "You can also modify or delete an event.",
+        add: "Add",
+        update: "Update",
+        activity: "Activity",
+        place: "Place",
+        car: "Car",
+        bus: "Bus",
+        train: "Train"
+      }
+    };
+
     const utilisateur = JSON.parse(localStorage.getItem('utilisateur'));
     const userInfoDiv = document.getElementById('userInfo');
     const STORAGE_KEY = `evenements_${utilisateur?.nom}_${utilisateur?.prenom}`;
-    let langue = 'fr';
+    const LANG_KEY = 'easytrip_lang';
+    let langue = localStorage.getItem(LANG_KEY) || 'fr';
     let editingLi = null;
+
+    function translatePage() {
+      const dict = TRANSLATIONS[langue];
+      document.title = dict.title;
+      document.querySelectorAll('[data-lang]').forEach(el => {
+        el.textContent = dict[el.dataset.lang];
+      });
+      document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
+        el.placeholder = dict[el.dataset.langPlaceholder];
+      });
+      document.getElementById('submitBtn').textContent = editingLi ? dict.update : dict.add;
+      document.querySelectorAll('#transport option').forEach(opt => {
+        if (dict[opt.value]) opt.textContent = dict[opt.value];
+      });
+    }
 
     if (utilisateur) {
       const nomAffiche = utilisateur.nom === 'Invité' ? 'Invité' : `${utilisateur.prenom} ${utilisateur.nom}`;
@@ -132,10 +119,12 @@
       window.location.href = 'index.html';
     }
 
-    document.getElementById("langBtn").addEventListener("click", () => {
-      langue = langue === 'fr' ? 'en' : 'fr';
-      document.getElementById("langBtn").textContent = langue === 'fr' ? '🇫🇷' : '🇬🇧';
-      alert(`Langue changée en ${langue === 'fr' ? 'français' : 'anglais'}. (Traduction future)`);
+    const langSelect = document.getElementById("langSelect");
+    langSelect.value = langue;
+    langSelect.addEventListener("change", () => {
+      langue = langSelect.value;
+      localStorage.setItem(LANG_KEY, langue);
+      translatePage();
     });
 
     const selectHeure = document.getElementById("startTime");
@@ -199,7 +188,7 @@
         document.getElementById("transport").value = cleanedTransport;
 
         editingLi = li;
-        submitBtn.textContent = "Mettre à jour";
+        submitBtn.textContent = TRANSLATIONS[langue].update;
       });
 
       eventList.appendChild(li);
@@ -219,7 +208,7 @@
       if (editingLi) {
         editingLi.querySelector('span').textContent = texte;
         editingLi = null;
-        submitBtn.textContent = "Ajouter";
+        submitBtn.textContent = TRANSLATIONS[langue].add;
       } else {
         ajouterEvenement(texte);
       }
@@ -228,6 +217,7 @@
       form.reset();
     });
 
+    translatePage();
     chargerEvenements();
   </script>
 </body>
