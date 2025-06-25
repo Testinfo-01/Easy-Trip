@@ -27,6 +27,11 @@
     .user-info {
       font-weight: bold;
     }
+    .lang-toggle {
+      margin-left: 1rem;
+      padding: 0.3rem 0.7rem;
+      cursor: pointer;
+    }
     .content {
       margin-top: 2rem;
       background: white;
@@ -57,11 +62,18 @@
       padding: 0.5rem;
       border-radius: 6px;
     }
-    .delete-btn {
+    .action-btn {
       background: none;
       border: none;
-      color: #d11a2a;
       cursor: pointer;
+      margin-left: 0.5rem;
+    }
+    .delete-btn {
+      color: #d11a2a;
+      font-size: 18px;
+    }
+    .edit-btn {
+      color: #1a73e8;
       font-size: 18px;
     }
   </style>
@@ -69,7 +81,10 @@
 <body>
   <div class="header">
     <h1>Easy Trip</h1>
-    <div class="user-info" id="userInfo">Bienvenue !</div>
+    <div>
+      <span class="user-info" id="userInfo">Bienvenue !</span>
+      <button id="langBtn" class="lang-toggle">🇫🇷</button>
+    </div>
   </div>
 
   <div class="content">
@@ -78,7 +93,7 @@
       Voici comment utiliser Easy Trip :</p>
       <ul>
         <li>Entrez une activité (ex : visite musée)</li>
-        <li>Choisissez l’heure de départ</li>
+        <li>Choisissez la date et l’heure de départ</li>
         <li>Indiquez le lieu</li>
         <li>Cliquez sur “Ajouter” pour générer votre itinéraire</li>
       </ul>
@@ -86,6 +101,7 @@
     </div>
 
     <form id="eventForm">
+      <input type="date" id="eventDate" required>
       <input type="text" id="event" placeholder="Activité" required>
       <select id="startTime"></select>
       <input type="text" id="location" placeholder="Lieu" required>
@@ -105,12 +121,21 @@
   <script>
     const utilisateur = JSON.parse(localStorage.getItem('utilisateur'));
     const userInfoDiv = document.getElementById('userInfo');
+    const STORAGE_KEY = `evenements_${utilisateur?.nom}_${utilisateur?.prenom}`;
+    let langue = 'fr';
+
     if (utilisateur) {
       const nomAffiche = utilisateur.nom === 'Invité' ? 'Invité' : `${utilisateur.prenom} ${utilisateur.nom}`;
       userInfoDiv.textContent = `Bienvenue, ${nomAffiche}`;
     } else {
       window.location.href = 'index.html';
     }
+
+    document.getElementById("langBtn").addEventListener("click", () => {
+      langue = langue === 'fr' ? 'en' : 'fr';
+      document.getElementById("langBtn").textContent = langue === 'fr' ? '🇫🇷' : '🇬🇧';
+      alert(`Langue changée en ${langue === 'fr' ? 'français' : 'anglais'}. (Traduction future)`);
+    });
 
     const selectHeure = document.getElementById("startTime");
     for (let h = 0; h < 24; h++) {
@@ -126,26 +151,65 @@
     const form = document.getElementById("eventForm");
     const eventList = document.getElementById("eventList");
 
+    function sauvegarderEvenements() {
+      const items = [];
+      eventList.querySelectorAll('li').forEach(li => {
+        items.push(li.querySelector('span').textContent);
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    function chargerEvenements() {
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      data.forEach(txt => ajouterEvenement(txt));
+    }
+
+    function ajouterEvenement(texte) {
+      const li = document.createElement("li");
+      li.innerHTML = `<span>${texte}</span>
+        <div>
+          <button class="action-btn edit-btn">✏️</button>
+          <button class="action-btn delete-btn">🗑️</button>
+        </div>`;
+
+      li.querySelector(".delete-btn").addEventListener("click", () => {
+        li.remove();
+        sauvegarderEvenements();
+      });
+
+      li.querySelector(".edit-btn").addEventListener("click", () => {
+        const parts = li.querySelector('span').textContent.split(' - ');
+        if (parts.length < 2) return;
+        const [date, reste] = parts;
+        const [time, description] = reste.split(' ', 2);
+
+        document.getElementById("eventDate").value = date;
+        document.getElementById("startTime").value = time;
+        document.getElementById("event").value = description.split(' à ')[0];
+
+        li.remove();
+        sauvegarderEvenements();
+      });
+
+      eventList.appendChild(li);
+    }
+
     form.addEventListener("submit", function(e) {
       e.preventDefault();
 
+      const date = document.getElementById("eventDate").value;
       const eventName = document.getElementById("event").value;
       const time = document.getElementById("startTime").value;
       const location = document.getElementById("location").value;
       const transport = document.getElementById("transport").value;
 
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <span>${time} - ${eventName} à ${location} (${transport})</span>
-        <button class="delete-btn" title="Supprimer">🗑️</button>
-      `;
-
-      const deleteBtn = li.querySelector(".delete-btn");
-      deleteBtn.addEventListener("click", () => li.remove());
-
-      eventList.appendChild(li);
+      const texte = `${date} - ${time} ${eventName} à ${location} (${transport})`;
+      ajouterEvenement(texte);
+      sauvegarderEvenements();
       form.reset();
     });
+
+    chargerEvenements();
   </script>
 </body>
 </html>
