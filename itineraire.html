@@ -1,1 +1,109 @@
-<!DOCTYPE html><html><head><title>Itinéraire</title></head><body><h1>Page itinéraire</h1></body></html>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon itinéraire - Easy Trip</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #f0f4f8;
+      padding: 2rem;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .header h1 {
+      color: #005eff;
+    }
+    .user-info {
+      font-weight: bold;
+    }
+    .content {
+      margin-top: 2rem;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    #guide {
+      background: #e9f1ff;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    #horaireSelect {
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Easy Trip</h1>
+    <div class="user-info" id="userInfo">Bienvenue !</div>
+  </div>
+
+  <div class="content">
+    <div id="guide">
+      <p><strong>Bienvenue !</strong><br>
+      Voici comment utiliser Easy Trip :</p>
+      <ul>
+        <li>Entrez une activité (ex : visite musée)</li>
+        <li>Choisissez l’heure de départ et la durée</li>
+        <li>Indiquez le lieu</li>
+        <li>Cliquez sur “Ajouter” pour générer votre itinéraire avec carte</li>
+      </ul>
+      <p>Vous pouvez aussi modifier ou supprimer un événement.</p>
+    </div>
+
+    <form id="eventForm">
+      <input type="text" id="event" placeholder="Activité">
+      <select id="startTime"></select>
+      <input type="text" id="duration" placeholder="Durée (ex: 1h30)">
+      <input type="text" id="location" placeholder="Lieu">
+      <select id="transport">
+        <option>Voiture</option>
+        <option>Bus</option>
+        <option>Train</option>
+      </select>
+      <button type="submit">Ajouter</button>
+    </form>
+
+    <ul id="eventList"></ul>
+    <div id="map" style="height: 400px; margin-top: 2rem;"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const utilisateur = JSON.parse(localStorage.getItem('utilisateur'));
+    const userInfoDiv = document.getElementById('userInfo');
+    if (utilisateur) {
+      const nomAffiche = utilisateur.nom === 'Invité' ? 'Invité' : `${utilisateur.prenom} ${utilisateur.nom}`;
+      userInfoDiv.textContent = `Bienvenue, ${nomAffiche}`;
+    } else {
+      window.location.href = 'index.html';
+    }
+
+    // Créer les tranches horaires de 30 min
+    const selectHeure = document.getElementById("startTime");
+    for (let h = 0; h < 24; h++) {
+      ["00", "30"].forEach(min => {
+        const time = `${String(h).padStart(2, '0')}:${min}`;
+        const option = document.createElement("option");
+        option.value = time;
+        option.textContent = time;
+        selectHeure.appendChild(option);
+      });
+    }
+  </script>
+</body>
+</html>
