@@ -161,6 +161,64 @@
       localStorage.removeItem('utilisateur');
       window.location.href = 'index.html';
     }
+
+    const translations = {
+      fr: {
+        welcome: "Bienvenue !",
+        howto: "Voici comment utiliser Easy Trip :",
+        step1: "Entrez une activité (ex : visite musée)",
+        step2: "Choisissez la date et l’heure de départ",
+        step3: "Indiquez le lieu",
+        step4: "Cliquez sur “Ajouter” pour générer votre itinéraire",
+        modify: "Vous pouvez aussi modifier ou supprimer un événement.",
+        add: "Ajouter",
+        activity: "Activité",
+        place: "Lieu",
+        car: "Voiture",
+        bus: "Bus",
+        train: "Train",
+        title: "Mon itinéraire - Easy Trip"
+      },
+      en: {
+        welcome: "Welcome!",
+        howto: "Here's how to use Easy Trip:",
+        step1: "Enter an activity (e.g., museum visit)",
+        step2: "Choose the date and departure time",
+        step3: "Indicate the location",
+        step4: "Click on 'Add' to generate your itinerary",
+        modify: "You can also modify or delete an event.",
+        add: "Add",
+        activity: "Activity",
+        place: "Place",
+        car: "Car",
+        bus: "Bus",
+        train: "Train",
+        title: "My Itinerary - Easy Trip"
+      }
+    };
+
+    function applyTranslations(lang) {
+      document.querySelectorAll('[data-lang]').forEach(el => {
+        const key = el.getAttribute('data-lang');
+        el.textContent = translations[lang][key];
+      });
+      document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-lang-placeholder');
+        el.placeholder = translations[lang][key];
+      });
+      document.title = translations[lang]['title'];
+    }
+
+    const langSelect = document.getElementById('langSelect');
+    const savedLang = localStorage.getItem('lang') || 'fr';
+    langSelect.value = savedLang;
+    applyTranslations(savedLang);
+
+    langSelect.addEventListener('change', () => {
+      const selectedLang = langSelect.value;
+      localStorage.setItem('lang', selectedLang);
+      applyTranslations(selectedLang);
+    });
   </script>
 </body>
 </html>
