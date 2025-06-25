@@ -50,6 +50,19 @@
     }
     #eventList li {
       margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f9f9f9;
+      padding: 0.5rem;
+      border-radius: 6px;
+    }
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #d11a2a;
+      cursor: pointer;
+      font-size: 18px;
     }
   </style>
 </head>
@@ -99,7 +112,6 @@
       window.location.href = 'index.html';
     }
 
-    // Créer les tranches horaires de 30 min
     const selectHeure = document.getElementById("startTime");
     for (let h = 0; h < 24; h++) {
       ["00", "30"].forEach(min => {
@@ -111,7 +123,6 @@
       });
     }
 
-    // Gestion du formulaire
     const form = document.getElementById("eventForm");
     const eventList = document.getElementById("eventList");
 
@@ -124,9 +135,15 @@
       const transport = document.getElementById("transport").value;
 
       const li = document.createElement("li");
-      li.textContent = `${time} - ${eventName} à ${location} (${transport})`;
-      eventList.appendChild(li);
+      li.innerHTML = `
+        <span>${time} - ${eventName} à ${location} (${transport})</span>
+        <button class="delete-btn" title="Supprimer">🗑️</button>
+      `;
 
+      const deleteBtn = li.querySelector(".delete-btn");
+      deleteBtn.addEventListener("click", () => li.remove());
+
+      eventList.appendChild(li);
       form.reset();
     });
   </script>
