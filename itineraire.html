@@ -41,8 +41,15 @@
       margin-bottom: 1.5rem;
       line-height: 1.6;
     }
-    #horaireSelect {
-      width: 100px;
+    form input, form select, form button {
+      margin-right: 0.5rem;
+      padding: 0.5rem;
+    }
+    #eventList {
+      margin-top: 1rem;
+    }
+    #eventList li {
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
@@ -60,15 +67,15 @@
         <li>Entrez une activité (ex : visite musée)</li>
         <li>Choisissez l’heure de départ</li>
         <li>Indiquez le lieu</li>
-        <li>Cliquez sur “Ajouter” pour générer votre itinéraire avec carte</li>
+        <li>Cliquez sur “Ajouter” pour générer votre itinéraire</li>
       </ul>
       <p>Vous pouvez aussi modifier ou supprimer un événement.</p>
     </div>
 
     <form id="eventForm">
-      <input type="text" id="event" placeholder="Activité">
+      <input type="text" id="event" placeholder="Activité" required>
       <select id="startTime"></select>
-      <input type="text" id="location" placeholder="Lieu">
+      <input type="text" id="location" placeholder="Lieu" required>
       <select id="transport">
         <option>Voiture</option>
         <option>Bus</option>
@@ -103,6 +110,25 @@
         selectHeure.appendChild(option);
       });
     }
+
+    // Gestion du formulaire
+    const form = document.getElementById("eventForm");
+    const eventList = document.getElementById("eventList");
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const eventName = document.getElementById("event").value;
+      const time = document.getElementById("startTime").value;
+      const location = document.getElementById("location").value;
+      const transport = document.getElementById("transport").value;
+
+      const li = document.createElement("li");
+      li.textContent = `${time} - ${eventName} à ${location} (${transport})`;
+      eventList.appendChild(li);
+
+      form.reset();
+    });
   </script>
 </body>
 </html>
