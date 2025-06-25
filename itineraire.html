@@ -7,98 +7,86 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
-      background-color: #f4f6f8;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
     }
     .header {
-      background-color: #ffffff;
-      padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 1rem 2rem;
+      background-color: white;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
     }
     .header h1 {
+      color: #0b66ff;
       margin: 0;
-      font-size: 1.8rem;
-      color: #0b57d0;
     }
     .user-info {
-      font-weight: 600;
-      margin-right: 1rem;
+      font-weight: bold;
     }
     .content {
       max-width: 900px;
       margin: 2rem auto;
-      padding: 2rem;
-      background-color: #ffffff;
+      background: white;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      padding: 2rem;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
     #guide {
-      background-color: #eaf2ff;
+      background-color: #eaf1ff;
       padding: 1.5rem;
       border-radius: 10px;
       margin-bottom: 2rem;
     }
-    #guide ul {
-      margin: 0;
-      padding-left: 1.2rem;
-    }
     form {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
-      align-items: center;
-      margin-bottom: 1rem;
+      gap: 1rem;
+      margin-bottom: 2rem;
     }
-    form input, form select, form button {
-      padding: 0.5rem;
-      border-radius: 6px;
+    input, select, button {
+      padding: 0.6rem 0.9rem;
       border: 1px solid #ccc;
+      border-radius: 6px;
       font-size: 1rem;
     }
-    form button {
-      background-color: #0b57d0;
+    button {
+      background-color: #0b66ff;
       color: white;
       border: none;
       cursor: pointer;
-      transition: background-color 0.2s ease-in-out;
+      transition: background 0.3s;
     }
-    form button:hover {
-      background-color: #094bb7;
+    button:hover {
+      background-color: #0047b3;
     }
-    ul#eventList {
+    ul {
       list-style: none;
       padding: 0;
     }
-    ul#eventList li {
+    li {
+      background: #f0f4fa;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
       display: flex;
       justify-content: space-between;
-      background-color: #f8f9fa;
-      padding: 0.8rem;
-      border-radius: 6px;
-      margin-bottom: 0.5rem;
       align-items: center;
     }
     .action-btn {
+      background: none;
       border: none;
-      background: transparent;
       font-size: 1.2rem;
       cursor: pointer;
       margin-left: 0.5rem;
     }
-    #map {
-      height: 400px;
-      margin-top: 2rem;
-      border-radius: 12px;
-    }
     #langSelect {
-      padding: 0.4rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
       font-size: 1rem;
+      padding: 0.3rem;
+      margin-left: 1rem;
     }
   </style>
 </head>
@@ -113,12 +101,45 @@
       </select>
     </div>
   </div>
-
-  <div class="content">
-    <!-- Le reste du contenu (guide, formulaire, carte, script) reste inchangé -->
+  <div class="content" id="mainContent" style="display:none">
+    <div id="guide">
+      <p><strong data-lang="welcome">Bienvenue !</strong><br>
+      <span data-lang="howto">Voici comment utiliser Easy Trip :</span></p>
+      <ul>
+        <li data-lang="step1">Entrez une activité (ex : visite musée)</li>
+        <li data-lang="step2">Choisissez la date et l’heure de départ</li>
+        <li data-lang="step3">Indiquez le lieu</li>
+        <li data-lang="step4">Cliquez sur “Ajouter” pour générer votre itinéraire</li>
+      </ul>
+      <p data-lang="modify">Vous pouvez aussi modifier ou supprimer un événement.</p>
+    </div>
+    <form id="eventForm">
+      <input type="date" id="eventDate" required>
+      <input type="text" id="event" placeholder="Activité" required data-lang-placeholder="activity">
+      <select id="startTime"></select>
+      <input type="text" id="location" placeholder="Lieu" required data-lang-placeholder="place">
+      <select id="transport">
+        <option value="Voiture" data-lang="car">Voiture</option>
+        <option value="Bus" data-lang="bus">Bus</option>
+        <option value="Train" data-lang="train">Train</option>
+      </select>
+      <button type="submit" id="submitBtn" data-lang="add">Ajouter</button>
+    </form>
+    <ul id="eventList"></ul>
+    <div id="map" style="height: 400px; margin-top: 2rem;"></div>
   </div>
-
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- Le script JavaScript complet reste inchangé -->
+  <script>
+    const utilisateur = JSON.parse(localStorage.getItem('utilisateur'));
+    const userInfoDiv = document.getElementById('userInfo');
+    const mainContent = document.getElementById('mainContent');
+    if (utilisateur) {
+      const nomAffiche = utilisateur.nom === 'Invité' ? 'Invité' : `${utilisateur.prenom} ${utilisateur.nom}`;
+      userInfoDiv.textContent = `Bienvenue, ${nomAffiche}`;
+      mainContent.style.display = 'block';
+    } else {
+      window.location.href = 'index.html';
+    }
+  </script>
 </body>
 </html>
