@@ -24,8 +24,24 @@
       color: #0b66ff;
       margin: 0;
     }
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
     .user-info {
       font-weight: bold;
+    }
+    .logout-btn {
+      padding: 0.4rem 0.8rem;
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .logout-btn:hover {
+      background-color: #cc0000;
     }
     .content {
       max-width: 900px;
@@ -86,19 +102,19 @@
     #langSelect {
       font-size: 1rem;
       padding: 0.3rem;
-      margin-left: 1rem;
     }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>Easy Trip</h1>
-    <div>
+    <div class="user-actions">
       <span class="user-info" id="userInfo">Bienvenue !</span>
       <select id="langSelect">
         <option value="fr">🇫🇷 FR</option>
         <option value="en">🇬🇧 ENG</option>
       </select>
+      <button class="logout-btn" onclick="logout()">Déconnexion</button>
     </div>
   </div>
   <div class="content" id="mainContent" style="display:none">
@@ -138,6 +154,11 @@
       userInfoDiv.textContent = `Bienvenue, ${nomAffiche}`;
       mainContent.style.display = 'block';
     } else {
+      window.location.href = 'index.html';
+    }
+
+    function logout() {
+      localStorage.removeItem('utilisateur');
       window.location.href = 'index.html';
     }
   </script>
