@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Easy Trip - Accueil</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+    h1 {
+      color: #005eff;
+      margin-bottom: 1rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.75rem;
+      background-color: #005eff;
+      color: white;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #0041b3;
+    }
+    .separator {
+      margin: 1rem 0;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Easy Trip</h1>
+    <form id="loginForm">
+      <input type="text" id="prenom" placeholder="Prénom" required>
+      <input type="text" id="nom" placeholder="Nom" required>
+      <button type="submit">Créer un compte</button>
+    </form>
+    <div class="separator">ou</div>
+    <button onclick="connecterInvite()">Continuer en tant qu'invité</button>
+  </div>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const nom = document.getElementById('nom').value;
+      const prenom = document.getElementById('prenom').value;
+      localStorage.setItem('utilisateur', JSON.stringify({ nom, prenom }));
+      window.location.href = 'itineraire.html';
+    });
+    function connecterInvite() {
+      localStorage.setItem('utilisateur', JSON.stringify({ nom: 'Invité', prenom: '' }));
+      window.location.href = 'itineraire.html';
+    }
+  </script>
+</body>
+</html>
