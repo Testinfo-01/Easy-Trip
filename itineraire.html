@@ -110,7 +110,7 @@
         <option>Bus</option>
         <option>Train</option>
       </select>
-      <button type="submit">Ajouter</button>
+      <button type="submit" id="submitBtn">Ajouter</button>
     </form>
 
     <ul id="eventList"></ul>
@@ -123,6 +123,7 @@
     const userInfoDiv = document.getElementById('userInfo');
     const STORAGE_KEY = `evenements_${utilisateur?.nom}_${utilisateur?.prenom}`;
     let langue = 'fr';
+    let editingLi = null;
 
     if (utilisateur) {
       const nomAffiche = utilisateur.nom === 'Invité' ? 'Invité' : `${utilisateur.prenom} ${utilisateur.nom}`;
@@ -150,6 +151,7 @@
 
     const form = document.getElementById("eventForm");
     const eventList = document.getElementById("eventList");
+    const submitBtn = document.getElementById("submitBtn");
 
     function sauvegarderEvenements() {
       const items = [];
@@ -180,15 +182,24 @@
       li.querySelector(".edit-btn").addEventListener("click", () => {
         const parts = li.querySelector('span').textContent.split(' - ');
         if (parts.length < 2) return;
-        const [date, reste] = parts;
-        const [time, description] = reste.split(' ', 2);
+        const date = parts[0];
+        const rest = parts[1];
+        const time = rest.substring(0, 5);
+        const reste = rest.substring(6);
 
         document.getElementById("eventDate").value = date;
         document.getElementById("startTime").value = time;
-        document.getElementById("event").value = description.split(' à ')[0];
 
-        li.remove();
-        sauvegarderEvenements();
+        const [activity, restLieu] = reste.split(" à ");
+        const [lieu, transport] = restLieu.split(" (");
+        const cleanedTransport = transport.replace(")", "").trim();
+
+        document.getElementById("event").value = activity.trim();
+        document.getElementById("location").value = lieu.trim();
+        document.getElementById("transport").value = cleanedTransport;
+
+        editingLi = li;
+        submitBtn.textContent = "Mettre à jour";
       });
 
       eventList.appendChild(li);
@@ -204,7 +215,15 @@
       const transport = document.getElementById("transport").value;
 
       const texte = `${date} - ${time} ${eventName} à ${location} (${transport})`;
-      ajouterEvenement(texte);
+
+      if (editingLi) {
+        editingLi.querySelector('span').textContent = texte;
+        editingLi = null;
+        submitBtn.textContent = "Ajouter";
+      } else {
+        ajouterEvenement(texte);
+      }
+
       sauvegarderEvenements();
       form.reset();
     });
