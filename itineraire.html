@@ -3,222 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-lang="title">Mon itinéraire - Easy Trip</title>
+  <title>Easy Trip - Planificateur</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f5f7fa;
-      color: #333;
+      background-color: #f9f9f9;
     }
     .header {
+      background-color: white;
+      padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 2rem;
-      background-color: white;
       box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
     }
     .header h1 {
       color: #0b66ff;
       margin: 0;
     }
-    .user-actions {
+    .main {
       display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .user-info {
-      font-weight: bold;
-    }
-    .logout-btn {
-      padding: 0.4rem 0.8rem;
-      background-color: #ff4d4d;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .logout-btn:hover {
-      background-color: #cc0000;
-    }
-    .content {
-      max-width: 900px;
-      margin: 2rem auto;
-      background: white;
-      border-radius: 12px;
+      gap: 2rem;
       padding: 2rem;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      max-width: 1200px;
+      margin: auto;
     }
-    #guide {
-      background-color: #eaf1ff;
-      padding: 1.5rem;
-      border-radius: 10px;
-      margin-bottom: 2rem;
-    }
-    form {
+    .form-container {
+      flex: 1;
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
       gap: 1rem;
-      margin-bottom: 2rem;
     }
-    input, select, button {
-      padding: 0.6rem 0.9rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+    .form-container input, .form-container select, .form-container button {
+      padding: 0.8rem;
       font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
-    button {
+    .form-container button {
       background-color: #0b66ff;
       color: white;
       border: none;
       cursor: pointer;
       transition: background 0.3s;
     }
-    button:hover {
+    .form-container button:hover {
       background-color: #0047b3;
     }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      background: #f0f4fa;
-      margin-bottom: 1rem;
-      padding: 1rem;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .action-btn {
-      background: none;
-      border: none;
-      font-size: 1.2rem;
-      cursor: pointer;
-      margin-left: 0.5rem;
-    }
-    #langSelect {
-      font-size: 1rem;
-      padding: 0.3rem;
+    #map {
+      flex: 1;
+      height: 500px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>Easy Trip</h1>
-    <div class="user-actions">
-      <span class="user-info" id="userInfo">Bienvenue !</span>
-      <select id="langSelect">
-        <option value="fr">🇫🇷 FR</option>
-        <option value="en">🇬🇧 ENG</option>
-      </select>
-      <button class="logout-btn" onclick="logout()">Déconnexion</button>
-    </div>
   </div>
-  <div class="content" id="mainContent" style="display:none">
-    <div id="guide">
-      <p><strong data-lang="welcome">Bienvenue !</strong><br>
-      <span data-lang="howto">Voici comment utiliser Easy Trip :</span></p>
-      <ul>
-        <li data-lang="step1">Entrez une activité (ex : visite musée)</li>
-        <li data-lang="step2">Choisissez la date et l’heure de départ</li>
-        <li data-lang="step3">Indiquez le lieu</li>
-        <li data-lang="step4">Cliquez sur “Ajouter” pour générer votre itinéraire</li>
-      </ul>
-      <p data-lang="modify">Vous pouvez aussi modifier ou supprimer un événement.</p>
+  <div class="main">
+    <div class="form-container">
+      <input type="text" id="activity" placeholder="Activité">
+      <select id="time"></select>
+      <input type="text" id="place" placeholder="Lieu">
+      <button onclick="addEvent()">Ajouter</button>
     </div>
-    <form id="eventForm">
-      <input type="date" id="eventDate" required>
-      <input type="text" id="event" placeholder="Activité" required data-lang-placeholder="activity">
-      <select id="startTime"></select>
-      <input type="text" id="location" placeholder="Lieu" required data-lang-placeholder="place">
-      <select id="transport">
-        <option value="Voiture" data-lang="car">Voiture</option>
-        <option value="Bus" data-lang="bus">Bus</option>
-        <option value="Train" data-lang="train">Train</option>
-      </select>
-      <button type="submit" id="submitBtn" data-lang="add">Ajouter</button>
-    </form>
-    <ul id="eventList"></ul>
-    <div id="map" style="height: 400px; margin-top: 2rem;"></div>
+    <div id="map"></div>
   </div>
+
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const utilisateur = JSON.parse(localStorage.getItem('utilisateur'));
-    const userInfoDiv = document.getElementById('userInfo');
-    const mainContent = document.getElementById('mainContent');
-    if (utilisateur) {
-      const nomAffiche = utilisateur.nom === 'Invité' ? 'Invité' : `${utilisateur.prenom} ${utilisateur.nom}`;
-      userInfoDiv.textContent = `Bienvenue, ${nomAffiche}`;
-      mainContent.style.display = 'block';
-    } else {
-      window.location.href = 'index.html';
-    }
-
-    function logout() {
-      localStorage.removeItem('utilisateur');
-      window.location.href = 'index.html';
-    }
-
-    const translations = {
-      fr: {
-        welcome: "Bienvenue !",
-        howto: "Voici comment utiliser Easy Trip :",
-        step1: "Entrez une activité (ex : visite musée)",
-        step2: "Choisissez la date et l’heure de départ",
-        step3: "Indiquez le lieu",
-        step4: "Cliquez sur “Ajouter” pour générer votre itinéraire",
-        modify: "Vous pouvez aussi modifier ou supprimer un événement.",
-        add: "Ajouter",
-        activity: "Activité",
-        place: "Lieu",
-        car: "Voiture",
-        bus: "Bus",
-        train: "Train",
-        title: "Mon itinéraire - Easy Trip"
-      },
-      en: {
-        welcome: "Welcome!",
-        howto: "Here's how to use Easy Trip:",
-        step1: "Enter an activity (e.g., museum visit)",
-        step2: "Choose the date and departure time",
-        step3: "Indicate the location",
-        step4: "Click on 'Add' to generate your itinerary",
-        modify: "You can also modify or delete an event.",
-        add: "Add",
-        activity: "Activity",
-        place: "Place",
-        car: "Car",
-        bus: "Bus",
-        train: "Train",
-        title: "My Itinerary - Easy Trip"
+    const timeSelect = document.getElementById('time');
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 30) {
+        const hh = h.toString().padStart(2, '0');
+        const mm = m.toString().padStart(2, '0');
+        const option = document.createElement('option');
+        option.value = `${hh}:${mm}`;
+        option.textContent = `${hh}:${mm}`;
+        timeSelect.appendChild(option);
       }
-    };
-
-    function applyTranslations(lang) {
-      document.querySelectorAll('[data-lang]').forEach(el => {
-        const key = el.getAttribute('data-lang');
-        el.textContent = translations[lang][key];
-      });
-      document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
-        const key = el.getAttribute('data-lang-placeholder');
-        el.placeholder = translations[lang][key];
-      });
-      document.title = translations[lang]['title'];
     }
 
-    const langSelect = document.getElementById('langSelect');
-    const savedLang = localStorage.getItem('lang') || 'fr';
-    langSelect.value = savedLang;
-    applyTranslations(savedLang);
+    const map = L.map('map').setView([45.4215, -75.699], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-    langSelect.addEventListener('change', () => {
-      const selectedLang = langSelect.value;
-      localStorage.setItem('lang', selectedLang);
-      applyTranslations(selectedLang);
-    });
+    function addEvent() {
+      const activity = document.getElementById('activity').value;
+      const time = document.getElementById('time').value;
+      const place = document.getElementById('place').value;
+      if (activity && time && place) {
+        alert(`Activité ajoutée : ${activity} à ${time}, lieu : ${place}`);
+        // Traitement ou stockage des événements
+      } else {
+        alert("Veuillez remplir tous les champs.");
+      }
+    }
   </script>
 </body>
 </html>
