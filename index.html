@@ -3,166 +3,102 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Easy Trip</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <title>Easy Trip - Accueil</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f8fb;
+      background: #f4f8fb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
       color: #333;
     }
-    .header {
-      background-color: #0b66ff;
-      padding: 1.5rem;
-      color: white;
-      text-align: center;
-      font-size: 1.8rem;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
-    .intro {
-      text-align: center;
-      padding: 1rem;
-      font-size: 1.1rem;
-      max-width: 800px;
-      margin: 0 auto;
-      color: #444;
-    }
     .container {
-      display: flex;
-      gap: 2rem;
-      padding: 2rem;
-      max-width: 1200px;
-      margin: auto;
-      align-items: flex-start;
-    }
-    .form-section {
-      flex: 1;
       background: white;
-      padding: 1.5rem;
+      padding: 2rem;
       border-radius: 10px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
     }
-    .form-section h2 {
-      margin-top: 0;
+    h1 {
+      margin-bottom: 1rem;
       color: #0b66ff;
     }
-    .form-section input,
-    .form-section select,
-    .form-section button {
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
       width: 100%;
       padding: 0.8rem;
       margin-bottom: 1rem;
       font-size: 1rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    .form-section button {
       background-color: #0b66ff;
       color: white;
       border: none;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .form-section button:hover {
-      background-color: #004bbd;
-    }
-    #map {
-      flex: 1;
-      height: 550px;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    .event-list {
-      margin-top: 1rem;
-    }
-    .event-item {
-      background: #eef4ff;
-      padding: 0.7rem;
       border-radius: 6px;
-      margin-bottom: 0.5rem;
-      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #004bbd;
     }
   </style>
 </head>
 <body>
-  <div class="header">Easy Trip - Organisez votre itinéraire facilement</div>
-  <div class="intro">
-    Planifiez vos activités de voyage simplement : ajoutez vos étapes, visualisez-les sur la carte et suivez l'ordre chronologique de vos événements.
-  </div>
   <div class="container">
-    <div class="form-section">
-      <h2>Ajouter une activité</h2>
-      <input type="text" id="activity" placeholder="Activité">
-      <select id="time"></select>
-      <input type="text" id="place" placeholder="Lieu">
-      <button onclick="addEvent()">Ajouter</button>
-      <div class="event-list" id="eventList"></div>
-    </div>
-    <div id="map"></div>
+    <h1>Easy Trip</h1>
+    <button onclick="signInWithGoogle()">Se connecter avec Google</button>
+    <input type="text" id="prenom" placeholder="Prénom">
+    <input type="text" id="nom" placeholder="Nom">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Mot de passe">
+    <button onclick="signUp()">Créer un compte</button>
+    <button onclick="signIn()">Se connecter</button>
   </div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const timeSelect = document.getElementById('time');
-    for (let h = 0; h < 24; h++) {
-      for (let m = 0; m < 60; m += 30) {
-        const hh = h.toString().padStart(2, '0');
-        const mm = m.toString().padStart(2, '0');
-        const option = document.createElement('option');
-        option.value = `${hh}:${mm}`;
-        option.textContent = `${hh}:${mm}`;
-        timeSelect.appendChild(option);
-      }
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function signInWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then(() => window.location.href = "itineraire.html")
+        .catch(error => alert(error.message));
     }
 
-    const map = L.map('map').setView([45.4215, -75.699], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+    function signUp() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => window.location.href = "itineraire.html")
+        .catch(error => alert(error.message));
+    }
 
-    const geocoderURL = 'https://nominatim.openstreetmap.org/search?format=json&q=';
-    let polylinePoints = [];
-    const eventList = document.getElementById('eventList');
-
-    function addEvent() {
-      const activity = document.getElementById('activity').value.trim();
-      const time = document.getElementById('time').value;
-      const place = document.getElementById('place').value.trim();
-
-      if (activity && time && place) {
-        fetch(geocoderURL + encodeURIComponent(place))
-          .then(response => response.json())
-          .then(data => {
-            if (data.length > 0) {
-              const lat = parseFloat(data[0].lat);
-              const lon = parseFloat(data[0].lon);
-              L.marker([lat, lon]).addTo(map)
-                .bindPopup(`<b>${activity}</b><br>${place}`).openPopup();
-              polylinePoints.push([lat, lon]);
-              if (polylinePoints.length > 1) {
-                L.polyline(polylinePoints, {color: 'blue'}).addTo(map);
-              }
-              const eventItem = document.createElement('div');
-              eventItem.className = 'event-item';
-              eventItem.textContent = `${time} - ${activity} @ ${place}`;
-              eventList.appendChild(eventItem);
-              // Réinitialiser les champs
-              document.getElementById('activity').value = '';
-              document.getElementById('place').value = '';
-              document.getElementById('time').selectedIndex = 0;
-            } else {
-              alert("Lieu introuvable.");
-            }
-          })
-          .catch(err => {
-            console.error(err);
-            alert("Erreur de géolocalisation.");
-          });
-      } else {
-        alert("Veuillez remplir tous les champs.");
-      }
+    function signIn() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => window.location.href = "itineraire.html")
+        .catch(error => alert(error.message));
     }
   </script>
 </body>
